@@ -4,7 +4,14 @@
   "description": "The content below is an example project proposal / requirements document. Replace the text below the lines marked \"__TODO__\" with details specific to your project. Remove the \"TODO\" lines.",
   "main": "index.js",
   "dependencies": {
-    "handlebars": "^4.1.1"
+    "bootstrap": "^4.3.1",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "handlebars": "^4.1.1",
+    "hbs": "^4.0.3",
+    "mongo-sanitize": "^1.0.1",
+    "mongoose": "^5.4.22",
+    "path": "^0.12.7"
   },
   "devDependencies": {},
   "scripts": {

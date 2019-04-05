@@ -8,19 +8,24 @@ The content below is an example project proposal / requirements document. Replac
 
 (___TODO__: a brief one or two paragraph, high-level description of your project_)
 
-Remembering what to buy at the grocery store is waaaaay too difficult. Also, shopping for groceries when you're hungry leads to regrettable purchases. Sooo... that's where Shoppy Shoperson comes in!
+KeepMyPassSafe is a password storage utility that automatically encrypts all of your sensitive account information. 
 
-Shoppy Shoperson is a web app that will allow users to keep track of multiple grocery lists. Users can register and login. Once they're logged in, they can create or view their grocery list. For every list that they have, they can add items to the list or cross off items.
+To begin, navigate to the homepage and enter a private key that will give you access to your accounts.
+
+It is highly recommended that you write down the private key somewhere secure, or at least create a key that is easy for you to remember. Each time you enter your private key successfully, the app will automatically redirect your browser to a randomly generated URL which is only available in your current session. This mitigates attacks by eavesdroppers or by looking at browser history.
+
+Once you are on your access page, you can then create a new Folder, which is a group of similar accounts. For example, all of your online shopping accounts (Amazon, Ebay, Etsy, etc) can go into one Folder. Within the Folder, you can add new accounts and view existing accounts.
 
 
 ## Data Model
 
 (___TODO__: a description of your application's data and their relationships to each other_) 
 
-The application will store Users, Lists and Items
+The application will store Users, Folders, and Accounts.
 
-* users can have multiple lists (via references)
-* each list can have multiple items (by embedding)
+* a user has a unique private key. each user will have multiple folders.
+* each folder will have multiple accounts.
+* each account will have a user-friendly name and the login information.
 
 (___TODO__: sample documents_)
 
