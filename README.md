@@ -4,8 +4,6 @@ KeepMyPassSafe
 
 ## Overview
 
-(___TODO__: a brief one or two paragraph, high-level description of your project_)
-
 KeepMyPassSafe is a password storage utility that automatically encrypts all of your sensitive account information. 
 
 To begin, navigate to the homepage and enter a private key that will give you access to your accounts.
@@ -16,8 +14,6 @@ Once you are on your access page, you can then create a new Folder, which is a g
 
 
 ## Data Model
-
-(___TODO__: a description of your application's data and their relationships to each other_) 
 
 The application will store Users, Folders, and Accounts.
 

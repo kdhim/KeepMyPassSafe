@@ -1,0 +1,15 @@
+#folderContainer{
+	width:800px;
+	margin:20px auto;
+}
+
+#folderContainer .folder{
+	width:250px;
+	height:150px;
+	border:1px solid lightgrey;
+	text-align:center;
+}
+
+#folderContainer .folder:hover{
+	cursor:pointer;
+}

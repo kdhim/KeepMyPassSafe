@@ -1,0 +1,16 @@
+<h1>Welcome to your dashboard</h1>
+{{#if folders}}
+	<div id="folderContainer">
+	{{#each folders}}
+		<div class="folder">
+			<h3>{{this.name}}</h3>
+		</div>
+	{{/each}}
+	</div>
+{{else}}
+	<h2>Start by creating a folder using the form below.</h2>
+	<form method="post" action="/dashboard">
+		Folder name: <input type="text" name="folderName" />
+		<input type="submit" value="Submit" />
+	</form>
+{{/if}}
