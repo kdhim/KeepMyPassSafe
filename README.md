@@ -27,26 +27,28 @@ An Example User:
 
 ```javascript
 {
-  username: "shannonshopper",
-  hash: // a password hash,
-  lists: // an array of references to List documents
+  key: "BillYBob123",
+  folders: []
 }
 ```
 
-An Example List with Embedded Items:
+An Example Folder:
 
 ```javascript
 {
-  user: // a reference to a User object
-  name: "Breakfast foods",
-  items: [
-    { name: "pancakes", quantity: "9876", checked: false},
-    { name: "ramen", quantity: "2", checked: true},
-  ],
-  createdAt: // timestamp
+  name: "Email",
+  accounts: []
 }
 ```
 
+An example Account:
+```javascript
+{
+  name: "Gmail",
+  userlogin: "bbob123@gmail.com",
+  password: "ABCD123PASSWORD!@#"
+}
+```
 
 ## [Link to Commented First Draft Schema](db.js) 
 
@@ -70,38 +72,32 @@ An Example List with Embedded Items:
 
 ## Site map
 
-(___TODO__: draw out a site map that shows how pages are related to each other_)
+Home page -> Dashboard -> View Folder -> View Account
 
-Here's a [complex example from wikipedia](https://upload.wikimedia.org/wikipedia/commons/2/20/Sitemap_google.jpg), but you can create one without the screenshots, drop shadows, etc. ... just names of pages and where they flow to.
+On home page, you can login to your dashboard using your private key. 
+On the dashboard, you can view all of your folders or groups of accounts. You can also create new folders.
+You can click on a folder to view all of the accounts within it. Click on any account to go to the account page.
+On the view account page, you can view, edit, or remove your private account information.
 
 ## User Stories or Use Cases
 
-(___TODO__: write out how your application will be used through [user stories](http://en.wikipedia.org/wiki/User_story#Format) and / or [use cases](https://www.mongodb.com/download-center?jmp=docs&_ga=1.47552679.1838903181.1489282706#previous)_)
-
-1. as non-registered user, I can register a new account with the site
-2. as a user, I can log in to the site
-3. as a user, I can create a new grocery list
-4. as a user, I can view all of the grocery lists I've created in a single list
-5. as a user, I can add items to an existing grocery list
-6. as a user, I can cross off items in an existing grocery list
+1. as a first time user, I can create a new user by specifying a private key.
+2. as a user, I can create a folder (account group) to contain multiple accounts within a single category.
+3. as a user, I can view existing folders and access the accounts I have created within them.
+4. as a user, I can create new accounts by specifying a name (i.e Gmail), the username or login email (Bob@gmail.com) and the password.
+5. as a user, I can edit account information or delete accounts from any folder.
 
 ## Research Topics
 
-(___TODO__: the research topics that you're planning on working on along with their point values... and the total points of research topics listed_)
+* (2 points) Use a CSS framework throughout your site, use a reasonable of customization of the framework (don't just use stock Bootstrap - minimally configure a theme)
+    * I'm going to use Bootstrap for the design and layout of my website
+* (6 points) Use a server-side JavaScript library or module that we did not cover in class (not including any from other requirements)
+    * I'm going to use the Crypto Node.js API to encrypt user login information in database storage
+    * Link to the API: https://nodejs.org/api/crypto.html#crypto_crypto
+    * This is challenging because I will have to encrypt multiple account data as it is created, as well as decrypt it for viewing and editing.
+    * I will use the Cipher and Decipher functionalities in the API.
 
-* (5 points) Integrate user authentication
-    * I'm going to be using passport for user authentication
-    * And account has been made for testing; I'll email you the password
-    * see <code>cs.nyu.edu/~jversoza/ait-final/register</code> for register page
-    * see <code>cs.nyu.edu/~jversoza/ait-final/login</code> for login page
-* (4 points) Perform client side form validation using a JavaScript library
-    * see <code>cs.nyu.edu/~jversoza/ait-final/my-form</code>
-    * if you put in a number that's greater than 5, an error message will appear in the dom
-* (5 points) vue.js
-    * used vue.js as the frontend framework; it's a challenging library to learn, so I've assigned it 5 points
-
-10 points total out of 8 required points (___TODO__: addtional points will __not__ count for extra credit_)
-
+8 points total out of 8 required points 
 
 ## [Link to Initial Main Project File](app.js) 
 
