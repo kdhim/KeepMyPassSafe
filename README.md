@@ -52,7 +52,7 @@ An example Account:
 
 ## [Link to Commented First Draft Schema](db.js) 
 
-(___TODO__: create a first draft of your Schemas in db.js and link to it_)
+https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/6c5b72b7d46d18b78bdfcf1b715c3f47f49e4eea/src/db.js#L4
 
 ## Wireframes
 
