@@ -29,16 +29,6 @@ app.use(session(sessionOptions));
 const User = mongoose.model('User');
 const Folder = mongoose.model('Folder');
 
-function getUser(key){
-	User.findOne({"key": key}, function(err, user){
-		if (user) {
-			console.log('user was found!');
-			return user;
-		} 
-	});
-	return null;
-}
-
 app.get('/', (req, res) => {
 	res.render('index', {});
 });
@@ -46,74 +36,79 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
 	const key = sanitize(req.body.key);
 
-	// we will now check the database to see if there is a User with key
-	// if yes, then we will login to that dashboard
-	// if not, then we will create a new User and redirect to an empty dashboard
-
-	/*User.findOne({key: key}, function(err, user){
-		if (!err && user){
-			console.log('user was found!');
-			//const folders = user.folders;
-			req.session.user = user;
-			res.redirect('/dashboard');
-		} else {
-			if (err){
-				console.log(err);
-			} else {
-				new User({
-					key: key
-				}).save(function(err){
-					res.redirect('/dashboard');
-				});
-			}
-		}
-	});*/
-
-	const user = getUser(key);
-	if (user) {
+	User.findOne({key: key}, function(err, user){
 		req.session.key = key; // set the session key
-	} else {
-		// create the user
-		new User({
-			key: key
-		}).save(function(err){
+
+		if (!user) {
+			console.log("User not found. Creating New USER " + key);
+			new User({
+				key: key,
+				folders: []
+			}).save(function(err){
+				res.redirect('/dashboard');
+			});
+		} else {
 			res.redirect('/dashboard');
-		});
-	}
-	res.redirect('/dashboard');
+		}
+	});
 });
 
 app.get('/dashboard', (req, res) => {
-	const user = getUser(req.session.key);
-
-	if (user){
-		const folders = user.folders; 
-		if (folders){
-			console.log("This session user " + req.session.user.key + " has folders");
+	User.findOne({key: req.session.key}, function(err, user){
+		if (user) {
+			console.log('User ' + req.session.key + ' was found');
+			const folders = user.folders;
+			console.log('printing folders:');
 			console.log(folders);
+			res.render('dashboard', {folders: folders});
+		} else {
+			res.redirect('/');
 		}
-		res.render('dashboard', {folders: folders});
-	} else {
-
-	}
-	res.render('dashboard', {folders: folders});
+	});
 });
 
 app.post('/dashboard', (req, res) => {
 	const fname = sanitize(req.body.folderName);
-	new Folder({
-		name: fname
-	}).save(function(err, folder){
-		if (err){
-			console.log(err);
-		} else {
-			if (folder){ 
-				const user = getUser(req.session.key); // the current user
-				user.folders.push(folder); // add this folder to the current user
-			} else{
-				console.log("unknown error creating the folder");
+
+	// 1. check if the folder already exists (there is already a folder with the same fname)
+	// 2. if it does not, then create it, and update the dashboard
+	// 3. if it does, print out an error
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			let found = false;
+			console.log('entered this clause');
+			const folders = user.folders;
+			for (let i = 0; i < folders.length; i++){
+				if (folders[i].name === fname){
+					console.log("folders[i]: " + folders[i] + "i: " + i);
+					found = true;
+				}
 			}
-			res.redirect('/dashboard'); // refresh the page
+
+			if (found){
+				console.log('Folder ' + fname + ' already exists for User ' + req.session.key);
+				res.render('dashboard', {folders: folders, error: 'That folder already exists. Try with a different name.'});
+			} else {
+				new Folder({
+				name: fname,
+				accounts: []
+				}).save(function(err, folder){
+					if (err){
+						console.log(err);
+					} else {
+						if (folder){ 
+							User.findOneAndUpdate({key: req.session.key}, {$push: {folders: folder}}, function(err) {
+								if (err){
+									console.log("had error updating book with new review");
+								} 
+							});
+						} else{
+							console.log("unknown error creating the folder");
+						}
+					}
+				});
+				res.redirect('/dashboard'); // refresh the page
+			}
 		}
 	});
 });

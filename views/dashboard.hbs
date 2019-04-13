@@ -7,10 +7,12 @@
 		</div>
 	{{/each}}
 	</div>
-{{else}}
-	<h2>Start by creating a folder using the form below.</h2>
-	<form method="post" action="/dashboard">
-		Folder name: <input type="text" name="folderName" />
-		<input type="submit" value="Submit" />
-	</form>
 {{/if}}
+<h2>Create a new folder by using the form below.</h2>
+{{#if error}}
+	<h3 class="errorMsg">{{error}}</h3>
+{{/if}}
+<form method="post" action="/dashboard">
+	Folder name: <input type="text" name="folderName" />
+	<input type="submit" value="Submit" />
+</form>

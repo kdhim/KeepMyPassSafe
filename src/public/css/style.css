@@ -4,6 +4,8 @@
 }
 
 #folderContainer .folder{
+	display:inline-block;
+	margin:0 20px;
 	width:250px;
 	height:150px;
 	border:1px solid lightgrey;
@@ -12,4 +14,8 @@
 
 #folderContainer .folder:hover{
 	cursor:pointer;
+}
+
+.errorMsg{
+	color:red;
 }
