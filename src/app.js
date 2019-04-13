@@ -116,3 +116,39 @@ app.post('/dashboard', (req, res) => {
 app.set('view engine', 'hbs');
 
 app.listen(process.env.port || 3000);
+
+// code for encrypting and decrypting
+
+/*
+
+function encryptText(cipher_alg, key, iv, text, encoding) {
+
+        const cipher = crypto.createCipheriv(cipher_alg, key, iv);
+
+        encoding = encoding || "binary";
+
+        let result = cipher.update(text, "utf8", encoding);
+        result += cipher.final(encoding);
+
+        return result;
+    }
+
+    function decryptText(cipher_alg, key, iv, text, encoding) {
+
+        const decipher = crypto.createDecipheriv(cipher_alg, key, iv);
+
+        encoding = encoding || "binary";
+
+        let result = decipher.update(text, encoding);
+        result += decipher.final();
+
+        return result;
+    }
+
+    // ENCRYPTION ALGORITHMS: 
+          "AES_128": "aes128",          //requires 16 byte key
+          "AES_128_CBC": "aes-128-cbc", //requires 16 byte key
+          "AES_192": "aes192",          //requires 24 byte key
+          "AES_256": "aes256"           //requires 32 byte key
+
+*/
