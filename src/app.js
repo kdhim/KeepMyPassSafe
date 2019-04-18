@@ -124,7 +124,46 @@ app.get('/folders/:id', (req, res) => {
 			res.render("folder", {});
 		}
 	});
-})
+});
+
+app.get('/logout', (req, res) => {
+	req.session.key = null;
+	res.redirect('/');
+});
+
+app.get('/folders/:id/add', (req, res) => {
+	const id = req.params.id;
+	Folder.findOne({_id: id}, function(err, folder){
+		if (folder){
+			/*
+			// use this code in the actual add-account part (after form completion)
+			User.findOne({"key": req.session.key}, function(err, user){
+				if (user){
+					const accs = folder.accounts;
+					const found = accs.forEach(function(acc){
+						if ()
+					});
+				} else { // error no user found
+					app.redirect('/');
+				}
+			});*/
+
+			res.render("folder", {folder: folder, showAddAcc: true});
+		} else if (err){
+			console.log(err);
+			res.render("folder", {});
+		}
+	});
+});
+
+app.post('/folders/:id/add-account', (req, res) => {
+	const accName = req.body.name;
+	const userlogin = req.body.userlogin;
+	const password = req.body.password;
+	const folderId = req.params.id;
+
+
+});
 
 app.set('view engine', 'hbs');
 

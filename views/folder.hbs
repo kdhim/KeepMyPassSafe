@@ -1,7 +1,65 @@
 <section class="container text-center pt-4">
 	{{#if folder}}
+		{{#if showAddAcc}}
+		<div class="container text-center jumbotron">
+			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </a>
+			<form class="mt-4 ">
+				<fieldset>
+					<legend>Add an Account to {{folder.name}} Folder</legend>
+					<div class="form-group row justify-content-md-center">
+						<label for="staticEmail" class="col-sm-2 col-form-label">Account name</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" name="name" placeholder="Enter a name for this account (ex: Gmail)">
+						</div>
+					</div>
+					<div class="form-group row justify-content-md-center">
+						<label for="exampleInputEmail1" class="col-sm-2 col-form-label">User login</label>
+						<div class="col-sm-4">
+							<input type="email" class="form-control" aria-describedby="emailHelp" name="userlogin" placeholder="Enter email or username needed to login">
+							<small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+						</div>
+					</div>
+					<div class="form-group row justify-content-md-center">
+						<label for="exampleInputPassword1" class="col-sm-2 col-form-label">Password</label>
+						<div class="col-sm-4">
+							<input type="password" class="form-control" name="password" placeholder="Enter password of new account">
+						</div>
+					</div>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</fieldset>
+			</form>
+		</div>
+		{{/if}}
+
 		<a href="../dashboard" class="btn btn-link">Click here to go back</a>
 		<h1 class="display-4">Viewing {{folder.name}} folder</h1>
+
+		<div class="container text-right">
+			<button type="button" class="btn btn-info"><a class="link-unstyled" href="/folders/{{folder._id}}/add">Add new account</a></button>
+		</div>
+
+		<table class="table table-hover mt-4">
+			<thead>
+				<tr>
+					<th scope="col">Account Name</th>
+					<th scope="col">User Login</th>
+					<th scope="col">Password</th>
+					<th scope="col">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each folder.accounts}}
+					<tr class="table-active">
+						<th scope="row">{{this.name}}</th>
+						<td>{{this.userlogin}}</td>
+						<td>{{this.password}}</td>
+						<td>EDIT - REMOVE</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
 	{{else}}
 		<div class="alert alert-dismissible alert-danger">
 			<strong>Oh snap!</strong> <a href="../dashboard" class="alert-link">Go back to the dashboard</a> and try submitting again.
