@@ -16,6 +16,7 @@ const User = new mongoose.Schema({
 // i.e a user can create a group for Email accounts
 // this group will contain all the account information in its "accounts" field
 const Folder = new mongoose.Schema({
+	_id: mongoose.Schema.Types.ObjectId,
 	name: {
 		type: String,
 		required: true

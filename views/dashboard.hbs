@@ -3,12 +3,12 @@
 	{{#if folders}}
 		<div id="folderContainer">
 		{{#each folders}}
-			<div class="folder card text-white bg-primary mb-3">
+			<a class="folder card text-white bg-primary mb-3" id="{{this._id}}" href="/folders/{{this._id}}">
 				<div class="card-body">
 					<img src="/img/folder.png" />
 					<h3 class="card-title">{{this.name}}</h3>
 				</div>
-			</div>
+			</a>
 		{{/each}}
 		</div>
 	{{/if}}
@@ -30,3 +30,4 @@
 		</div>
 	</form>
 </section>
+<!--<script src="js/dashboard.js"></script>-->

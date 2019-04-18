@@ -1,0 +1,10 @@
+<section class="container text-center pt-4">
+	{{#if folder}}
+		<a href="../dashboard" class="btn btn-link">Click here to go back</a>
+		<h1 class="display-4">Viewing {{folder.name}} folder</h1>
+	{{else}}
+		<div class="alert alert-dismissible alert-danger">
+			<strong>Oh snap!</strong> <a href="../dashboard" class="alert-link">Go back to the dashboard</a> and try submitting again.
+		</div>
+	{{/if}}
+</section>

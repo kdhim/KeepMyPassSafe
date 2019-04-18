@@ -90,6 +90,7 @@ app.post('/dashboard', (req, res) => {
 				res.render('dashboard', {folders: folders, error: 'That folder already exists. Try with a different name.'});
 			} else {
 				new Folder({
+				_id: mongoose.Types.ObjectId(),
 				name: fname,
 				accounts: []
 				}).save(function(err, folder){
@@ -112,6 +113,18 @@ app.post('/dashboard', (req, res) => {
 		}
 	});
 });
+
+app.get('/folders/:id', (req, res) => {
+	const id = req.params.id;
+	Folder.findOne({_id: id}, function(err, folder){
+		if (folder){
+			res.render("folder", {folder: folder});
+		} else if (err){
+			console.log(err);
+			res.render("folder", {});
+		}
+	});
+})
 
 app.set('view engine', 'hbs');
 
