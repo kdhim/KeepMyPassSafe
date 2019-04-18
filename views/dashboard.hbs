@@ -1,18 +1,32 @@
-<h1>Welcome to your dashboard</h1>
-{{#if folders}}
-	<div id="folderContainer">
-	{{#each folders}}
-		<div class="folder">
-			<h3>{{this.name}}</h3>
+<section class="container text-center pt-4">
+	<h1 class="display-4">Welcome to your dashboard</h1>
+	{{#if folders}}
+		<div id="folderContainer">
+		{{#each folders}}
+			<div class="folder card text-white bg-primary mb-3">
+				<div class="card-body">
+					<img src="/img/folder.png" />
+					<h3 class="card-title">{{this.name}}</h3>
+				</div>
+			</div>
+		{{/each}}
 		</div>
-	{{/each}}
-	</div>
-{{/if}}
-<h2>Create a new folder by using the form below.</h2>
-{{#if error}}
-	<h3 class="errorMsg">{{error}}</h3>
-{{/if}}
-<form method="post" action="/dashboard">
-	Folder name: <input type="text" name="folderName" />
-	<input type="submit" value="Submit" />
-</form>
+	{{/if}}
+	<h2>Create a new folder by using the form below.</h2>
+	{{#if error}}
+		<h3 class="errorMsg">{{error}}</h3>
+	{{/if}}
+	<form method="post" action="/dashboard" class="form-inline">
+		<div class="form-row align-items-center mx-auto">
+			<div class="col-auto">
+					<label>Folder name:</label>
+			</div>
+			<div class="col-auto">
+				<input type="text" class="form-control" name="folderName" />
+			</div>
+			<div class="col-auto">
+				<input type="submit" class="btn btn-success" value="Submit" />
+			</div>
+		</div>
+	</form>
+</section>

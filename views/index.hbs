@@ -1,9 +1,23 @@
-<section id="main">
-	<h1>Encrypted Password Storage</h1>
-	<h2>Never forget your passwords again.</h2>
-	<form action="/" method="post">
-	Enter your private key here: <input type="text" name="key" />
-	<input type="submit" value="Get Access" />
-	</form>
-	New User? Simply enter a key that you'd like to use above and click "Get Access." Write it down!
+<section id="main" class="container">
+	<div class="page-header text-center">
+		<img src="/img/logo.png" />
+		<h1 class="display-3">Encrypted Password Storage</h1>
+		<h2>Never forget your passwords again.</h2>
+		<hr class="my-4">
+		<form action="/" method="post" class="form-inline">
+			<div class="form-row align-items-center mx-auto">
+				<div class="col-auto">
+						<label>Enter your private key here:</label>
+				</div>
+				<div class="col-auto">
+						<input type="text" class="form-control" name="key" />
+				</div>
+				<div class="col-auto">
+						<input type="submit" class="btn btn-success" value="Get Access" />
+				</div>
+			</div>
+		</form>
+		<hr class="my-2">
+		New User? Simply enter a key that you'd like to use above and click "Get Access." Write it down!
+	</div>
 </section>
