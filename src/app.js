@@ -28,6 +28,7 @@ app.use(session(sessionOptions));
 
 const User = mongoose.model('User');
 const Folder = mongoose.model('Folder');
+const Account = mongoose.model('Account');
 
 app.get('/', (req, res) => {
 	res.render('index', {});
@@ -102,13 +103,15 @@ app.post('/dashboard', (req, res) => {
 								if (err){
 									console.log("had error updating book with new review");
 								} 
+								res.redirect('/dashboard'); // refresh the page
 							});
 						} else{
 							console.log("unknown error creating the folder");
+							res.redirect('/dashboard'); // refresh the page
 						}
 					}
 				});
-				res.redirect('/dashboard'); // refresh the page
+				//res.redirect('/dashboard'); // refresh the page
 			}
 		}
 	});
@@ -162,7 +165,28 @@ app.post('/folders/:id/add-account', (req, res) => {
 	const password = req.body.password;
 	const folderId = req.params.id;
 
-
+	new Account({
+//		_id: mongoose.Types.ObjectId(),
+		name: accName,
+		userlogin: userlogin,
+		password: password
+		}).save(function(err, acc){
+			if (err){
+				console.log(err);
+			} else {
+				if (acc){ 
+					Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
+						if (err){
+							console.log("had error updating folder with new account");
+						} 
+						res.redirect('/folders/' + folderId); // refresh the page
+					});
+				} else{
+					console.log("unknown error creating the folder");
+					res.redirect('/folders/' + folderId); // refresh the page
+				}
+			}
+		});
 });
 
 app.set('view engine', 'hbs');
