@@ -17,7 +17,7 @@
 					<div class="form-group row justify-content-md-center">
 						<label for="exampleInputEmail1" class="col-sm-2 col-form-label">User login</label>
 						<div class="col-sm-4">
-							<input type="email" class="form-control" aria-describedby="emailHelp" name="userlogin" placeholder="Enter email or username needed to login">
+							<input type="text" class="form-control" aria-describedby="emailHelp" name="userlogin" placeholder="Enter email or username needed to login">
 						</div>
 					</div>
 					<div class="form-group row justify-content-md-center">
@@ -32,7 +32,63 @@
 		</div>
 		{{/if}}
 
-		<a href="../dashboard" class="btn btn-link">Click here to go back</a>
+		{{#if editAcc}}
+		<div class="container text-center jumbotron">
+			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </a>
+			<form class="mt-4" method="post" action="/folders/{{folder._id}}/{{editAcc.name}}/edit-account">
+				<fieldset>
+					<legend>Edit {{editAcc.name}} Account Information</legend>
+					<div class="form-group row justify-content-md-center">
+						<label for="exampleInputEmail1" class="col-sm-2 col-form-label">New user login</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" aria-describedby="emailHelp" name="userlogin" placeholder="Enter new email or username for this account">
+						</div>
+					</div>
+					<div class="form-group row justify-content-md-center">
+						<label for="exampleInputPassword1" class="col-sm-2 col-form-label">New password</label>
+						<div class="col-sm-4">
+							<input type="password" class="form-control" name="password" placeholder="Enter new password for this account">
+						</div>
+					</div>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</fieldset>
+			</form>
+		</div>
+		{{/if}}
+
+		{{#if removeAcc}}
+		<div class="container text-center jumbotron">
+			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </a>
+			<form class="mt-4" method="post" action="/folders/{{folder._id}}/{{removeAcc.name}}/remove-account">
+				<fieldset>
+					<legend>Are you sure you want to delete your {{removeAcc.name}} Account?</legend>
+					<button type="submit" class="btn btn-danger">Delete Account</button> <br /> <br />
+					<a class="text-muted" href="/folders/{{folder._id}}">No, cancel this operation</a>
+				</fieldset>
+			</form>
+		</div>
+		{{/if}}
+
+		{{#if editSuccess}}
+			<div class="alert alert-dismissible alert-success">
+			  <button type="button" class="close" data-dismiss="alert">&times;</button>
+			  <strong>Well done!</strong> You have successfully edited your account information</a>.
+			</div>
+		{{/if}}
+
+		{{#if editAcc}}
+			<a href="../../../dashboard" class="btn btn-link">Click here to go back</a>
+		{{else if showAddAcc}}
+			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
+		{{else}}
+			<a href="../dashboard" class="btn btn-link">Click here to go back</a>
+		{{/if}}
+
+
 		<h1 class="display-4">Viewing {{folder.name}} folder</h1>
 
 		<div class="container text-right">
@@ -54,7 +110,7 @@
 						<th scope="row">{{this.name}}</th>
 						<td>{{this.userlogin}}</td>
 						<td>{{this.password}}</td>
-						<td>EDIT - REMOVE</td>
+						<td><a href="/folders/{{../folder._id}}/{{this.name}}/edit">EDIT</a> - <a href="/folders/{{../folder._id}}/{{this.name}}/remove">REMOVE</a></td>
 					</tr>
 				{{/each}}
 			</tbody>

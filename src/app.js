@@ -9,6 +9,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const sanitize = require('mongo-sanitize');
 const session = require('express-session');
+const crypto = require('crypto');
 require('hbs');
 require('./db');
 
@@ -25,12 +26,46 @@ const sessionOptions = {
 };
 app.use(session(sessionOptions));
 
-
+// mongo schema models
 const User = mongoose.model('User');
 const Folder = mongoose.model('Folder');
 const Account = mongoose.model('Account');
 
+// code for encryption / decryption
+function encryptText(cipher_alg, key, text, encoding) {
+
+    const cipher = crypto.createCipher(cipher_alg, key);
+
+    encoding = encoding || "binary";
+
+    let result = cipher.update(text, "utf8", encoding);
+    result += cipher.final(encoding);
+
+    return result;
+}
+
+function decryptText(cipher_alg, key, text, encoding) {
+
+    const decipher = crypto.createDecipher(cipher_alg, key);
+
+    encoding = encoding || "binary";
+
+    let result = decipher.update(text, encoding);
+    result += decipher.final();
+
+    return result;
+}
+
+// code for express routes
+
 app.get('/', (req, res) => {
+
+	/*const encrypted = encryptText("aes-256-cbc", "d6F3Efeq", "helloworld", "hex");
+	console.log(encrypted);
+
+	const decrypted = decryptText("aes-256-cbc", "d6F3Efeq", encrypted, "hex");
+	console.log(decrypted);*/
+
 	res.render('index', {});
 });
 
@@ -174,7 +209,7 @@ app.post('/folders/:id/add-account', (req, res) => {
 			if (err){
 				console.log(err);
 			} else {
-				if (acc){ 
+				if (acc){ // might be error with pushing it to the accounts folder
 					Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
 						if (err){
 							console.log("had error updating folder with new account");
@@ -189,42 +224,156 @@ app.post('/folders/:id/add-account', (req, res) => {
 		});
 });
 
+// this will allow a user to edit an account login/password from the folder dashboard
+app.get('/folders/:id/:name/edit', (req, res) => {
+	const folderId = req.params.id;
+	const accName = req.params.name;
+
+	Folder.findOne({_id: folderId}, function(err, folder){
+		if (folder){
+
+			// determine if the account actually exists within this folder
+			const accs = folder.accounts;
+			let found = false;
+			accs.forEach(function(acc){
+				if (acc.name === accName){
+					found = true;
+					res.render("folder", {folder: folder, editAcc: acc});
+				}
+			});
+
+			if (!found){
+				res.redirect('/folders/' + folderId);
+			}
+		} else if (err){
+			console.log(err);
+			res.redirect('/folders/' + folderId);
+		}
+	});
+});
+
+app.post('/folders/:id/:name/edit-account', (req, res) => {
+	const folderId = req.params.id;
+	const accName = req.params.name;
+	const _userlogin = req.body.userlogin;
+	const _password = req.body.password;
+
+	Folder.findOne({_id: folderId}, function(err, folder){
+		if (folder){
+			Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
+				if (acc){
+					const accs = folder.accounts;
+					// update the accounts array within the folder
+					accs.forEach(function(el){
+						if (el.name === accName){
+							el.userlogin = _userlogin;
+							el.password = _password;
+						}
+					});
+
+					// save that new accounts array to the folder in db
+					Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
+						if (folder){
+							res.redirect('/folders/' + folderId);
+						} else if (err) {
+							console.log(err);
+						}
+					});
+				}
+				else if (err){
+					console.log(err);
+					res.redirect('/folders/' + folderId);
+				}
+			});
+		} else if (err){
+			console.log(err);
+			res.redirect('/folders/' + folderId);
+		}
+	});
+});
+
+app.get('/folders/:id/:name/remove', (req, res) => {
+	const folderId = req.params.id;
+	const accName = req.params.name;
+
+	Folder.findOne({_id: folderId}, function(err, folder){
+		if (folder){
+
+			// determine if the account actually exists within this folder
+			const accs = folder.accounts;
+			let found = false;
+			accs.forEach(function(acc){
+				if (acc.name === accName){
+					found = true;
+					res.render("folder", {folder: folder, removeAcc: acc});
+				}
+			});
+
+			if (!found){
+				res.redirect('/folders/' + folderId);
+			}
+		} else if (err){
+			console.log(err);
+			res.redirect('/folders/' + folderId);
+		}
+	});
+});
+
+app.post('/folders/:id/:name/remove-account', (req, res) => {
+	const folderId = req.params.id;
+	const accName = req.params.name;
+
+	Folder.findOne({_id: folderId}, function(err, folder){
+		if (folder){
+			Account.deleteOne({name: accName}, function(err, acc){
+				if (acc){
+					const accs = folder.accounts;
+
+					// delete the account from within the folder.accounts array
+					let idx = -1;
+					for (let i = 0; i < accs.length; i++){
+						const el = accs[i];
+						if (el.name === accName){
+							idx = i;
+						}
+					}
+
+					if (idx != -1){
+						accs.splice(idx, 1);
+					}
+
+					// update the folder array so that it doesn't have the deleted account
+					Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
+						if (folder){
+							res.redirect('/folders/' + folderId);
+						} else if (err) {
+							console.log(err);
+						}
+					});
+				}
+				else if (err){
+					console.log(err);
+					res.redirect('/folders/' + folderId);
+				}
+			});
+		} else if (err){
+			console.log(err);
+			res.redirect('/folders/' + folderId);
+		}
+	});
+});
+
 app.set('view engine', 'hbs');
 
 app.listen(process.env.PORT || 3000);
 
 // code for encrypting and decrypting
 
+
 /*
-
-function encryptText(cipher_alg, key, iv, text, encoding) {
-
-        const cipher = crypto.createCipheriv(cipher_alg, key, iv);
-
-        encoding = encoding || "binary";
-
-        let result = cipher.update(text, "utf8", encoding);
-        result += cipher.final(encoding);
-
-        return result;
-    }
-
-    function decryptText(cipher_alg, key, iv, text, encoding) {
-
-        const decipher = crypto.createDecipheriv(cipher_alg, key, iv);
-
-        encoding = encoding || "binary";
-
-        let result = decipher.update(text, encoding);
-        result += decipher.final();
-
-        return result;
-    }
-
     // ENCRYPTION ALGORITHMS: 
           "AES_128": "aes128",          //requires 16 byte key
           "AES_128_CBC": "aes-128-cbc", //requires 16 byte key
           "AES_192": "aes192",          //requires 24 byte key
           "AES_256": "aes256"           //requires 32 byte key
-
 */
