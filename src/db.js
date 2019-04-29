@@ -9,6 +9,10 @@ const User = new mongoose.Schema({
 	folders: {
 		type: Array,
 		default: []
+	},
+	secureArr: {
+		type: Array,
+		default: []
 	}
 });
 

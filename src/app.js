@@ -9,9 +9,9 @@ const path = require('path');
 const mongoose = require('mongoose');
 const sanitize = require('mongo-sanitize');
 const session = require('express-session');
-const crypto = require('crypto');
 require('hbs');
 require('./db');
+const encryption = require('./encryption');
 
 const app = express();
 
@@ -31,31 +31,6 @@ const User = mongoose.model('User');
 const Folder = mongoose.model('Folder');
 const Account = mongoose.model('Account');
 
-// code for encryption / decryption
-function encryptText(cipher_alg, key, text, encoding) {
-
-    const cipher = crypto.createCipher(cipher_alg, key);
-
-    encoding = encoding || "binary";
-
-    let result = cipher.update(text, "utf8", encoding);
-    result += cipher.final(encoding);
-
-    return result;
-}
-
-function decryptText(cipher_alg, key, text, encoding) {
-
-    const decipher = crypto.createDecipher(cipher_alg, key);
-
-    encoding = encoding || "binary";
-
-    let result = decipher.update(text, encoding);
-    result += decipher.final();
-
-    return result;
-}
-
 // code for express routes
 
 app.get('/', (req, res) => {
@@ -65,6 +40,17 @@ app.get('/', (req, res) => {
 
 	const decrypted = decryptText("aes-256-cbc", "d6F3Efeq", encrypted, "hex");
 	console.log(decrypted);*/
+
+//	console.log(encryption.generateCryptoKey());
+//	console.log(encryption.generateCryptoKey());
+
+	const key = encryption.generateCryptoKey();
+	const obscured = encryption.obscureKey(key);
+	const unobscured = encryption.unobscureKey(obscured);
+
+	console.log("key: " + key);
+	console.log("obscured: " + obscured);
+	console.log("unobscured: " + unobscured);
 
 	res.render('index', {});
 });
@@ -77,9 +63,14 @@ app.post('/', (req, res) => {
 
 		if (!user) {
 			console.log("User not found. Creating New USER " + key);
+
+			const cryptoKey = encryption.generateCryptoKey();
+			const obscured = encryption.obscureKey(cryptoKey);
+
 			new User({
 				key: key,
-				folders: []
+				folders: [],
+				secureArr: obscured
 			}).save(function(err){
 				res.redirect('/dashboard');
 			});
@@ -92,11 +83,13 @@ app.post('/', (req, res) => {
 app.get('/dashboard', (req, res) => {
 	User.findOne({key: req.session.key}, function(err, user){
 		if (user) {
-			console.log('User ' + req.session.key + ' was found');
+			//console.log('User ' + req.session.key + ' was found');
 			const folders = user.folders;
-			console.log('printing folders:');
-			console.log(folders);
+			//console.log('printing folders:');
+			//console.log(folders);
 			res.render('dashboard', {folders: folders});
+			//console.log('User secure arr ' + user.secureArr);
+			//console.log('User secure key ' + encryption.unobscureKey(user.secureArr));
 		} else {
 			res.redirect('/');
 		}
@@ -112,7 +105,7 @@ app.post('/dashboard', (req, res) => {
 	User.findOne({"key": req.session.key}, function(err, user){
 		if (user){
 			let found = false;
-			console.log('entered this clause');
+			//console.log('entered this clause');
 			const folders = user.folders;
 			for (let i = 0; i < folders.length; i++){
 				if (folders[i].name === fname){
@@ -154,12 +147,35 @@ app.post('/dashboard', (req, res) => {
 
 app.get('/folders/:id', (req, res) => {
 	const id = req.params.id;
-	Folder.findOne({_id: id}, function(err, folder){
-		if (folder){
-			res.render("folder", {folder: folder});
+
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			const encKey = encryption.unobscureKey(user.secureArr);
+			//console.log("found encKey: " + encKey);
+
+			Folder.findOne({_id: id}, function(err, folder){
+				if (folder){
+
+					let accData = [];
+
+					const accounts = folder.accounts;
+					accounts.forEach(function(acc){
+						const userlogin = encryption.decryptText(encKey, acc.userlogin);
+						const password = encryption.decryptText(encKey, acc.password);
+						accData.push({name: acc.name, userlogin: userlogin, password: password});
+					});
+
+					res.render("folder", {folder: folder, accData: accData});
+				} else if (err){
+					console.log(err);
+					res.render("folder", {});
+				}
+			});
 		} else if (err){
 			console.log(err);
-			res.render("folder", {});
+			res.redirect('/');
+		} else {
+			res.redirect('/');
 		}
 	});
 });
@@ -196,32 +212,44 @@ app.get('/folders/:id/add', (req, res) => {
 
 app.post('/folders/:id/add-account', (req, res) => {
 	const accName = req.body.name;
-	const userlogin = req.body.userlogin;
-	const password = req.body.password;
+	let userlogin = req.body.userlogin;
+	let password = req.body.password;
 	const folderId = req.params.id;
 
-	new Account({
-//		_id: mongoose.Types.ObjectId(),
-		name: accName,
-		userlogin: userlogin,
-		password: password
-		}).save(function(err, acc){
-			if (err){
-				console.log(err);
-			} else {
-				if (acc){ // might be error with pushing it to the accounts folder
-					Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
-						if (err){
-							console.log("had error updating folder with new account");
-						} 
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			const encKey = encryption.unobscureKey(user.secureArr);
+			userlogin = encryption.encryptText(encKey, userlogin);
+			password = encryption.encryptText(encKey, password);
+
+			new Account({
+	//		_id: mongoose.Types.ObjectId(),
+			name: accName,
+			userlogin: userlogin,
+			password: password
+			}).save(function(err, acc){
+				if (err){
+					console.log(err);
+				} else {
+					if (acc){ // might be error with pushing it to the accounts folder
+						Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
+							if (err){
+								console.log("had error updating folder with new account");
+							} 
+							res.redirect('/folders/' + folderId); // refresh the page
+						});
+					} else{
+						console.log("unknown error creating the folder");
 						res.redirect('/folders/' + folderId); // refresh the page
-					});
-				} else{
-					console.log("unknown error creating the folder");
-					res.redirect('/folders/' + folderId); // refresh the page
+					}
 				}
-			}
-		});
+			});
+		}
+		else if (err){
+			console.log(err);
+			res.redirect('/');
+		}
+	});
 });
 
 // this will allow a user to edit an account login/password from the folder dashboard
@@ -229,25 +257,42 @@ app.get('/folders/:id/:name/edit', (req, res) => {
 	const folderId = req.params.id;
 	const accName = req.params.name;
 
-	Folder.findOne({_id: folderId}, function(err, folder){
-		if (folder){
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			const encKey = encryption.unobscureKey(user.secureArr);
 
-			// determine if the account actually exists within this folder
-			const accs = folder.accounts;
-			let found = false;
-			accs.forEach(function(acc){
-				if (acc.name === accName){
-					found = true;
-					res.render("folder", {folder: folder, editAcc: acc});
+			Folder.findOne({_id: folderId}, function(err, folder){
+				if (folder){
+
+					// determine if the account actually exists within this folder
+
+					let accData = [];
+
+					const accs = folder.accounts;
+					let found = false;
+					accs.forEach(function(acc){
+						
+						const userlogin = encryption.decryptText(encKey, acc.userlogin);
+						const password = encryption.decryptText(encKey, acc.password);
+						accData.push({name: acc.name, userlogin: userlogin, password: password});
+
+						if (acc.name === accName){
+							found = true;
+							res.render("folder", {folder: folder, editAcc: acc, accData: accData});
+						}
+					});
+
+					if (!found){
+						res.redirect('/folders/' + folderId);
+					}
+				} else if (err){
+					console.log(err);
+					res.redirect('/folders/' + folderId);
 				}
 			});
-
-			if (!found){
-				res.redirect('/folders/' + folderId);
-			}
 		} else if (err){
 			console.log(err);
-			res.redirect('/folders/' + folderId);
+			res.redirect('/');
 		}
 	});
 });
@@ -255,10 +300,53 @@ app.get('/folders/:id/:name/edit', (req, res) => {
 app.post('/folders/:id/:name/edit-account', (req, res) => {
 	const folderId = req.params.id;
 	const accName = req.params.name;
-	const _userlogin = req.body.userlogin;
-	const _password = req.body.password;
+	let _userlogin = req.body.userlogin;
+	let _password = req.body.password;
 
-	Folder.findOne({_id: folderId}, function(err, folder){
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			const encKey = encryption.unobscureKey(user.secureArr);
+			//console.log("my key: " + encKey);
+
+			_userlogin = encryption.encryptText(encKey, _userlogin);
+			_password = encryption.encryptText(encKey, _password);
+
+			Folder.findOne({_id: folderId}, function(err, folder){
+				if (folder){
+
+					Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
+						if (acc){
+							//console.log(acc);
+							const accs = folder.accounts;
+							// update the accounts array within the folder
+							accs.forEach(function(el){
+								if (el.name === accName){
+									el.userlogin = _userlogin;
+									el.password = _password;
+								}
+							});
+
+							// save that new accounts array to the folder in db
+							Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
+								if (folder){
+									res.redirect('/folders/' + folderId);
+								} else if (err) {
+									console.log(err);
+								}
+							});
+						}
+						else if (err){
+							console.log(err);
+							res.redirect('/folders/' + folderId);
+						}
+					});
+
+				} // end if(folder)
+			});
+		}
+	});
+
+	/*Folder.findOne({_id: folderId}, function(err, folder){
 		if (folder){
 			Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
 				if (acc){
@@ -289,32 +377,45 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 			console.log(err);
 			res.redirect('/folders/' + folderId);
 		}
-	});
+	});*/
 });
 
 app.get('/folders/:id/:name/remove', (req, res) => {
 	const folderId = req.params.id;
 	const accName = req.params.name;
 
-	Folder.findOne({_id: folderId}, function(err, folder){
-		if (folder){
+	User.findOne({"key": req.session.key}, function(err, user){
+		if (user){
+			const encKey = encryption.unobscureKey(user.secureArr);
 
-			// determine if the account actually exists within this folder
-			const accs = folder.accounts;
-			let found = false;
-			accs.forEach(function(acc){
-				if (acc.name === accName){
-					found = true;
-					res.render("folder", {folder: folder, removeAcc: acc});
+			Folder.findOne({_id: folderId}, function(err, folder){
+				if (folder){
+
+					let accData = [];
+					// determine if the account actually exists within this folder
+					const accs = folder.accounts;
+					let found = false;
+					accs.forEach(function(acc){
+						const userlogin = encryption.decryptText(encKey, acc.userlogin);
+						const password = encryption.decryptText(encKey, acc.password);
+						accData.push({name: acc.name, userlogin: userlogin, password: password});
+
+						if (acc.name === accName){
+							found = true;
+							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
+						}
+					});
+
+					if (!found){
+						res.redirect('/folders/' + folderId);
+					}
+				} else if (err){
+					console.log(err);
+					res.redirect('/folders/' + folderId);
+				} else {
+					res.redirect('/folders/' + folderId);
 				}
 			});
-
-			if (!found){
-				res.redirect('/folders/' + folderId);
-			}
-		} else if (err){
-			console.log(err);
-			res.redirect('/folders/' + folderId);
 		}
 	});
 });
