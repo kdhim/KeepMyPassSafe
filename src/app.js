@@ -263,14 +263,12 @@ app.get('/folders/:id/:name/edit', (req, res) => {
 
 			Folder.findOne({_id: folderId}, function(err, folder){
 				if (folder){
-
-					// determine if the account actually exists within this folder
-
 					let accData = [];
 
 					const accs = folder.accounts;
 					let found = false;
-					accs.forEach(function(acc){
+					
+					accs.filter(function(acc){
 						
 						const userlogin = encryption.decryptText(encKey, acc.userlogin);
 						const password = encryption.decryptText(encKey, acc.password);
@@ -319,7 +317,7 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 							//console.log(acc);
 							const accs = folder.accounts;
 							// update the accounts array within the folder
-							accs.forEach(function(el){
+							accs.filter(function(el){
 								if (el.name === accName){
 									el.userlogin = _userlogin;
 									el.password = _password;
@@ -395,7 +393,8 @@ app.get('/folders/:id/:name/remove', (req, res) => {
 					// determine if the account actually exists within this folder
 					const accs = folder.accounts;
 					let found = false;
-					accs.forEach(function(acc){
+
+					accs.filter(function(acc){
 						const userlogin = encryption.decryptText(encKey, acc.userlogin);
 						const password = encryption.decryptText(encKey, acc.password);
 						accData.push({name: acc.name, userlogin: userlogin, password: password});
@@ -405,6 +404,17 @@ app.get('/folders/:id/:name/remove', (req, res) => {
 							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
 						}
 					});
+
+					/*accs.forEach(function(acc){
+						const userlogin = encryption.decryptText(encKey, acc.userlogin);
+						const password = encryption.decryptText(encKey, acc.password);
+						accData.push({name: acc.name, userlogin: userlogin, password: password});
+
+						if (acc.name === accName){
+							found = true;
+							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
+						}
+					});*/
 
 					if (!found){
 						res.redirect('/folders/' + folderId);
