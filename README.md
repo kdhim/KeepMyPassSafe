@@ -50,7 +50,7 @@ An example Account:
 
 ## [Link to Commented First Draft Schema](db.js) 
 
-https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/6c5b72b7d46d18b78bdfcf1b715c3f47f49e4eea/src/db.js#L4
+https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/5857d6cb1592489591356ce64099270624236807/src/db.js#L4
 
 ## Site map
 
