@@ -83,6 +83,8 @@
 			<a href="../../../dashboard" class="btn btn-link">Click here to go back</a>
 		{{else if showAddAcc}}
 			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
+		{{ else if accExistsError}}
+			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
 		{{else}}
 			<a href="../dashboard" class="btn btn-link">Click here to go back</a>
 		{{/if}}
