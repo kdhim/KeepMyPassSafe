@@ -83,7 +83,7 @@ On the view account page, you can view, edit, or remove your private account inf
 
 ## [Link to Initial Main Project File](app.js) 
 
-https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/2bdcc115efcbc4d6356f93c9a489e3a3ed26ca1f/src/app.js#L1
+https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/70a43ee18dac248f842828d7fb3cc97ee2440bb7/src/app.js#L4
 
 
 ## Annotations / References Used
