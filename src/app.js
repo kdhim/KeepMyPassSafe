@@ -1,8 +1,5 @@
 // Final Project: KeepMyPassSafe - Encrypted Password Storage App
 // kd1621
-//
-// kd1621: linserv1.cims.nyu.edu ... port 18657
-// password: utQX6Lap
 
 const express = require('express');
 const path = require('path');
@@ -206,26 +203,53 @@ app.post('/folders/:id/add-account', (req, res) => {
 			userlogin = encryption.encryptText(encKey, userlogin);
 			password = encryption.encryptText(encKey, password);
 
-			new Account({
-	//		_id: mongoose.Types.ObjectId(),
-			name: accName,
-			userlogin: userlogin,
-			password: password
-			}).save(function(err, acc){
-				if (err){
-					console.log(err);
-				} else {
-					if (acc){ // might be error with pushing it to the accounts folder
-						Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
-							if (err){
-								console.log("had error updating folder with new account");
-							} 
-							res.redirect('/folders/' + folderId); // refresh the page
-						});
-					} else{
-						console.log("unknown error creating the folder");
-						res.redirect('/folders/' + folderId); // refresh the page
+			Folder.findOne({_id: folderId}, function(err, folder){
+				if (folder){
+
+					let accData = []; // holds the decrypted usernames and logins
+					const accs = folder.accounts;
+
+					accs.forEach(function(acc){
+						const userlogin = encryption.decryptText(encKey, acc.userlogin);
+						const password = encryption.decryptText(encKey, acc.password);
+						accData.push({name: acc.name, userlogin: userlogin, password: password});
+					});
+
+					const accsWithName = accs.filter(function(acc){
+						if (acc.name === accName){
+							return acc;
+						}
+					});
+
+					console.log(accsWithName);
+
+					if (accsWithName.length === 0){ // no account already with the same name: good
+ 						new Account({
+							name: accName,
+							userlogin: userlogin,
+							password: password
+							}).save(function(err, acc){
+								if (err){
+									console.log(err);
+								} else {
+									if (acc){ // might be error with pushing it to the accounts folder
+										Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
+											if (err){
+												console.log("had error updating folder with new account");
+											} 
+											res.redirect('/folders/' + folderId); // refresh the page
+										});
+									} else{
+										console.log("unknown error creating the folder");
+										res.redirect('/folders/' + folderId); // refresh the page
+									}
+								}
+							});
+					} else {
+						res.render("folder", {folder: folder, accData: accData, accExistsError: true})
 					}
+				} else{
+					res.redirect('/dashboard');
 				}
 			});
 		}
@@ -288,7 +312,6 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 	User.findOne({"key": req.session.key}, function(err, user){
 		if (user){
 			const encKey = encryption.unobscureKey(user.secureArr);
-			//console.log("my key: " + encKey);
 
 			_userlogin = encryption.encryptText(encKey, _userlogin);
 			_password = encryption.encryptText(encKey, _password);
@@ -298,7 +321,6 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 
 					Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
 						if (acc){
-							//console.log(acc);
 							const accs = folder.accounts;
 							// update the accounts array within the folder
 							accs.filter(function(el){
@@ -320,6 +342,8 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 						else if (err){
 							console.log(err);
 							res.redirect('/folders/' + folderId);
+						} else {
+							res.redirect('/folders/' + folderId);
 						}
 					});
 
@@ -327,39 +351,6 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 			});
 		}
 	});
-
-	/*Folder.findOne({_id: folderId}, function(err, folder){
-		if (folder){
-			Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
-				if (acc){
-					const accs = folder.accounts;
-					// update the accounts array within the folder
-					accs.forEach(function(el){
-						if (el.name === accName){
-							el.userlogin = _userlogin;
-							el.password = _password;
-						}
-					});
-
-					// save that new accounts array to the folder in db
-					Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
-						if (folder){
-							res.redirect('/folders/' + folderId);
-						} else if (err) {
-							console.log(err);
-						}
-					});
-				}
-				else if (err){
-					console.log(err);
-					res.redirect('/folders/' + folderId);
-				}
-			});
-		} else if (err){
-			console.log(err);
-			res.redirect('/folders/' + folderId);
-		}
-	});*/
 });
 
 app.get('/folders/:id/:name/remove', (req, res) => {
@@ -388,17 +379,6 @@ app.get('/folders/:id/:name/remove', (req, res) => {
 							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
 						}
 					});
-
-					/*accs.forEach(function(acc){
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-
-						if (acc.name === accName){
-							found = true;
-							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
-						}
-					});*/
 
 					if (!found){
 						res.redirect('/folders/' + folderId);
@@ -462,13 +442,3 @@ app.set('view engine', 'hbs');
 
 app.listen(process.env.PORT || 3000);
 
-// code for encrypting and decrypting
-
-
-/*
-    // ENCRYPTION ALGORITHMS: 
-          "AES_128": "aes128",          //requires 16 byte key
-          "AES_128_CBC": "aes-128-cbc", //requires 16 byte key
-          "AES_192": "aes192",          //requires 24 byte key
-          "AES_256": "aes256"           //requires 32 byte key
-*/

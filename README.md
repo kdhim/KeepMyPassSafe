@@ -21,8 +21,6 @@ The application will store Users, Folders, and Accounts.
 * each folder will have multiple accounts.
 * each account will have a user-friendly name and the login information.
 
-(___TODO__: sample documents_)
-
 An Example User:
 
 ```javascript
@@ -54,25 +52,9 @@ An example Account:
 
 https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/6c5b72b7d46d18b78bdfcf1b715c3f47f49e4eea/src/db.js#L4
 
-## Wireframes
-
-(___TODO__: wireframes for all of the pages on your site; they can be as simple as photos of drawings or you can use a tool like Balsamiq, Omnigraffle, etc._)
-
-/list/create - page for creating a new shopping list
-
-![list create](documentation/list-create.png)
-
-/list - page for showing all shopping lists
-
-![list](documentation/list.png)
-
-/list/slug - page for showing specific shopping list
-
-![list](documentation/list-slug.png)
-
 ## Site map
 
-Home page -> Dashboard -> View Folder -> View Account
+Home page -> Dashboard -> View Folder -> View Account -> Edit Account / Remove Account
 
 On home page, you can login to your dashboard using your private key. 
 On the dashboard, you can view all of your folders or groups of accounts. You can also create new folders.
@@ -101,11 +83,9 @@ On the view account page, you can view, edit, or remove your private account inf
 
 ## [Link to Initial Main Project File](app.js) 
 
-(___TODO__: create a skeleton Express application with a package.json, app.js, views folder, etc. ... and link to your initial app.js_)
+https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/2bdcc115efcbc4d6356f93c9a489e3a3ed26ca1f/src/app.js#L1
+
 
 ## Annotations / References Used
 
-(___TODO__: list any tutorials/references/etc. that you've based your code off of_)
-
-1. [passport.js authentication docs](http://passportjs.org/docs) - (add link to source code that was based on this)
-2. [tutorial on vue.js](https://vuejs.org/v2/guide/) - (add link to source code that was based on this)
+1. [Crypto NodeJS API](https://nodejs.org/api/crypto.html) - (https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/2bdcc115efcbc4d6356f93c9a489e3a3ed26ca1f/src/encryption.js#L9)

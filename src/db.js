@@ -54,8 +54,6 @@ mongoose.model('User', User);
 mongoose.model('Folder', Folder);
 mongoose.model('Account', Account);
 
-//mongoose.connect('mongodb://kd1621:utQX6Lap@class-mongodb.cims.nyu.edu/kd1621');
-
 // is the environment variable, NODE_ENV, set to PRODUCTION? 
 let dbconf;
 if (process.env.NODE_ENV === 'PRODUCTION') {
