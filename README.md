@@ -88,4 +88,4 @@ https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/7
 
 ## Annotations / References Used
 
-1. [Crypto NodeJS API](https://nodejs.org/api/crypto.html) - (https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/2bdcc115efcbc4d6356f93c9a489e3a3ed26ca1f/src/encryption.js#L9)
+1. [Crypto NodeJS API](https://nodejs.org/api/crypto.html) - (https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/blob/80b7ea992ccdbe30e31e7a3795c6423adeae0eff/src/encryption.js#L11)
