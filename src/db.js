@@ -56,7 +56,7 @@ mongoose.model('Account', Account);
 
 // is the environment variable, NODE_ENV, set to PRODUCTION? 
 let dbconf;
-if (process.env.NODE_ENV === 'PRODUCTION') {
+/*if (process.env.NODE_ENV === 'PRODUCTION') {
  // if we're in PRODUCTION mode, then read the configration from a file
  // use blocking file io to do this...
  const fs = require('fs');
@@ -72,6 +72,8 @@ if (process.env.NODE_ENV === 'PRODUCTION') {
 } else {
  // if we're not in PRODUCTION mode, then use
  dbconf = 'mongodb://localhost/final';
-}
+}*/
+
+dbconf = 'mongodb+srv://bossman:JocYDbzynzLCmegN@keepmypasssafe-wdxyq.mongodb.net/test?retryWrites=true&w=majority';
 mongoose.connect(dbconf);
 
