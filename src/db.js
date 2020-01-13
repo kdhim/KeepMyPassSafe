@@ -77,7 +77,7 @@ let dbconf;
 console.log("App name:" + process.env.OPENSHIFT_APP_NAME);
 console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
 
-dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/keep-my-pass-safe-git';
+dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/keep-my-pass-safe-git-1';
 
 if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 	console.log(process.env.OPENSHIFT_MONGODB_DB_URL);
