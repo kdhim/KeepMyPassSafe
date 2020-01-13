@@ -76,13 +76,14 @@ let dbconf;
 
 dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/sampledb';
 
-/*if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
-    dbconf = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
+if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
+	console.log(process.env.OPENSHIFT_MONGODB_DB_URL);
+    /*dbconf = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
     process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
     process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
     process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
-    process.env.OPENSHIFT_APP_NAME;
-  };*/
+    process.env.OPENSHIFT_APP_NAME;*/
+  };
 
 mongoose.connect(dbconf);
 
