@@ -74,7 +74,10 @@ let dbconf;
  dbconf = 'mongodb://localhost/final';
 }*/
 
-dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/sampledb';
+console.log("App name:" + process.env.OPENSHIFT_APP_NAME);
+console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
+
+dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/' + process.env.OPENSHIFT_APP_NAME;
 
 if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 	console.log(process.env.OPENSHIFT_MONGODB_DB_URL);
