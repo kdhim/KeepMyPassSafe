@@ -74,6 +74,15 @@ let dbconf;
  dbconf = 'mongodb://localhost/final';
 }*/
 
-dbconf = 'mongodb+srv://bossman:JocYDbzynzLCmegN@keepmypasssafe-wdxyq.mongodb.net/test?retryWrites=true&w=majority';
+dbconf = 'mongodb://userLU3:6iJHHadmbbUvELjU@127.0.0.1:27017/sampledb';
+
+if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
+    dbconf = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
+    process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
+    process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
+    process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
+    process.env.OPENSHIFT_APP_NAME;
+  };
+
 mongoose.connect(dbconf);
 
