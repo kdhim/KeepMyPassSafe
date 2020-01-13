@@ -74,7 +74,7 @@ let dbconf;
  dbconf = 'mongodb://localhost/final';
 }*/
 
-dbconf = 'mongodb://userLU3:6iJHHadmbbUvELjU@172.30.37.82:27017/sampledb';
+dbconf = 'mongodb://admin:6iJHHadmbbUvELjU@172.30.37.82:27017/sampledb';
 
 /*if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
     dbconf = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
