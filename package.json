@@ -15,16 +15,17 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project.git"
+    "url": "git+https://github.com/wonopon/KeepMyPassSafe.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project/issues"
+    "url": "https://github.com/wonopon/KeepMyPassSafe.git/issues"
   },
-  "homepage": "https://github.com/nyu-csci-ua-0480-008-spring-2019/wonopon-final-project#readme"
+  "homepage": "https://github.com/wonopon/KeepMyPassSafe.git#readme"
 }
