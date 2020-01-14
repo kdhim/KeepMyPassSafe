@@ -84,8 +84,7 @@ console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
     dbconf = 'mongodb://' + process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
     process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
     process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
-    process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
-    process.env.OPENSHIFT_APP_NAME + '/sampledb';
+    process.env.OPENSHIFT_MONGODB_DB_PORT + '/' + '/sampledb';
   };
 
 mongoose.connect(dbconf);
