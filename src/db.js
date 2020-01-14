@@ -76,7 +76,7 @@ let dbconf;
 
 dbconf = 'mongodb://userEBO:IOwXiSi82jNirN3o@172.30.44.171:27017/sampledb';
 
-if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
+/*if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 
 	console.log("App name:" + process.env.OPENSHIFT_APP_NAME);
 console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
@@ -85,7 +85,7 @@ console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
     process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
     process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
     process.env.OPENSHIFT_MONGODB_DB_PORT + '/' + process.env.OPENSHIFT_APP_NAME;
-  };
+  };*/
 
 mongoose.connect(dbconf);
 
