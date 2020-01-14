@@ -77,7 +77,7 @@ let dbconf;
 console.log("App name:" + process.env.OPENSHIFT_APP_NAME);
 console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
 
-dbconf = 'mongodb://127.0.0.1:27017/sampledb';
+dbconf = 'mongodb://admin:mVU3pstNGQLHPiWY@172.30.44.171:27017/sampledb';
 
 if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 	console.log(process.env.OPENSHIFT_MONGODB_DB_URL);
