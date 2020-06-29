@@ -1,44 +1,53 @@
-// Final Project: KeepMyPassSafe - Encrypted Password Storage App
-// kd1621
+// Keep My Pass Safe - Encrypted Password Storage App
+// Copyright &copy; Kevin Dhimitri 2019
 
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const sanitize = require('mongo-sanitize');
 const session = require('express-session');
+const functions = require('./functions')
+const encryption = require('./encryption');
 require('hbs');
 require('./db');
-const encryption = require('./encryption');
 
+// launch our express application
 const app = express();
 
+// code below handles proper file resource access for the web application in the /public directory
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// setting up express-session
+// setting up express-session to keep login state active
+// we only are concerned with users who create accounts, so set saveUnitialized to FALSE
 const sessionOptions = { 
-	secret: 'secret for signing session id', 
+	secret: 'secret for signing session id banana apple cars future mars mission tesla', 
 	saveUninitialized: false, 
 	resave: false 
 };
 app.use(session(sessionOptions));
 
 // mongo schema models
+// User has many Folders, Folder has many Accounts
 const User = mongoose.model('User');
 const Folder = mongoose.model('Folder');
 const Account = mongoose.model('Account');
 
 // code for express routes
 
+// render default page (enter private key to login)
 app.get('/', (req, res) => {
 	res.render('index', {});
 });
 
+// user enters private key
+// if it is recognized (Exists in DB), log them into dashboard
+// otherwise, create the User, and proceed to dashboard
 app.post('/', (req, res) => {
 	const key = sanitize(req.body.key);
 
 	User.findOne({key: key}, function(err, user){
-		req.session.key = key; // set the session key
+		req.session.key = key; // set the session user key
 
 		if (!user) {
 			console.log("User not found. Creating New USER " + key);
@@ -62,135 +71,82 @@ app.post('/', (req, res) => {
 app.get('/dashboard', (req, res) => {
 	User.findOne({key: req.session.key}, function(err, user){
 		if (user) {
-
 			const folders = user.folders;
-
 			res.render('dashboard', {folders: folders});
-
 		} else {
 			res.redirect('/');
 		}
 	});
 });
 
+// this handles the creation of a new Folder, containing accounts
 app.post('/dashboard', (req, res) => {
 	const fname = sanitize(req.body.folderName);
 
-	// 1. check if the folder already exists (there is already a folder with the same fname)
+	// 1. check if the folder already exists (there is already a folder with the same "fname")
 	// 2. if it does not, then create it, and update the dashboard
 	// 3. if it does, print out an error
 	User.findOne({"key": req.session.key}, function(err, user){
 		if (user){
-			let found = false;
-			//console.log('entered this clause');
-			const folders = user.folders;
-			for (let i = 0; i < folders.length; i++){
-				if (folders[i].name === fname){
-					console.log("folders[i]: " + folders[i] + "i: " + i);
-					found = true;
-				}
-			}
+			found = functions.findFolder(user, fname);
 
 			if (found){
 				console.log('Folder ' + fname + ' already exists for User ' + req.session.key);
-				res.render('dashboard', {folders: folders, error: 'That folder already exists. Try with a different name.'});
+				res.render('dashboard', {folders: user.folders, error: 'That folder already exists. Try with a different name.'});
 			} else {
 				new Folder({
 				_id: mongoose.Types.ObjectId(),
 				name: fname,
 				accounts: []
 				}).save(function(err, folder){
-					if (err){
-						console.log(err);
-					} else {
-						if (folder){ 
-							User.findOneAndUpdate({key: req.session.key}, {$push: {folders: folder}}, function(err) {
-								if (err){
-									console.log("had error updating book with new review");
-								} 
-								res.redirect('/dashboard'); // refresh the page
-							});
-						} else{
-							console.log("unknown error creating the folder");
-							res.redirect('/dashboard'); // refresh the page
-						}
-					}
-				});
-				//res.redirect('/dashboard'); // refresh the page
+					functions.saveFolder(req.session.key, folder, err, () => {
+						res.redirect('/dashboard');
+				})});
 			}
 		}
 	});
 });
 
-app.get('/folders/:id', (req, res) => {
+// will match /folders/id OR /folders/id/add
+// the latter is to display an "add account" modal on the folder view page
+app.get('/folders/:id/+(add)?', (req, res) => {
 	const id = req.params.id;
+
+	const reqUrl = req.originalUrl;
 
 	User.findOne({"key": req.session.key}, function(err, user){
 		if (user){
 			const encKey = encryption.unobscureKey(user.secureArr);
-			//console.log("found encKey: " + encKey);
 
 			Folder.findOne({_id: id}, function(err, folder){
 				if (folder){
+					const accData = functions.getAccounts(folder, encKey);
 
-					let accData = [];
-
-					const accounts = folder.accounts;
-					accounts.forEach(function(acc){
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-					});
-
-					res.render("folder", {folder: folder, accData: accData});
-				} else if (err){
-					console.log(err);
+					// if '/add' is in URL, then show the "showAddAcc" module
+					if (reqUrl.indexOf("/add") != -1){
+						res.render("folder", {folder: folder, accData: accData, showAddAcc: true});
+					} else{
+						res.render("folder", {folder: folder, accData: accData});
+					}
+				} else {
+					if (err) console.log(err);
 					res.render("folder", {});
 				}
 			});
-		} else if (err){
-			console.log(err);
-			res.redirect('/');
 		} else {
+			if (err) console.log(err);
 			res.redirect('/');
 		}
 	});
 });
 
+// logs the user out, redirecting back to default page
 app.get('/logout', (req, res) => {
 	req.session.key = null;
 	res.redirect('/');
 });
 
-app.get('/folders/:id/add', (req, res) => {
-	const id = req.params.id;
-
-	User.findOne({"key": req.session.key}, function(err, user){
-		if (user){
-			const encKey = encryption.unobscureKey(user.secureArr);
-			//console.log("found encKey: " + encKey);
-
-			Folder.findOne({_id: id}, function(err, folder){
-				if (folder){
-
-					let accData = [];
-
-					const accounts = folder.accounts;
-					accounts.forEach(function(acc){
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-					});
-
-					res.render("folder", {folder: folder, accData: accData, showAddAcc: true});
-				} else {
-					res.redirect('/');
-				}
-			});
-		}
-	});
-});
-
+// code for handling the creation of a new account
 app.post('/folders/:id/add-account', (req, res) => {
 	const accName = req.body.name;
 	let userlogin = req.body.userlogin;
@@ -198,63 +154,46 @@ app.post('/folders/:id/add-account', (req, res) => {
 	const folderId = req.params.id;
 
 	User.findOne({"key": req.session.key}, function(err, user){
-		if (user){
+		if (user)
+		{
 			const encKey = encryption.unobscureKey(user.secureArr);
 			userlogin = encryption.encryptText(encKey, userlogin);
 			password = encryption.encryptText(encKey, password);
 
 			Folder.findOne({_id: folderId}, function(err, folder){
-				if (folder){
+				if (folder)
+				{
+					const accData = functions.getAccounts(folder, encKey);
 
-					let accData = []; // holds the decrypted usernames and logins
-					const accs = folder.accounts;
-
-					accs.forEach(function(acc){
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-					});
-
-					const accsWithName = accs.filter(function(acc){
+					const accsWithName = accData.filter(function(acc){
 						if (acc.name === accName){
 							return acc;
 						}
 					});
 
-					console.log(accsWithName);
-
-					if (accsWithName.length === 0){ // no account already with the same name: good
- 						new Account({
+					// we need to make sure the account name is not already in use. if so, proceed.
+					if (accsWithName.length === 0) { 
+						new Account({
 							name: accName,
 							userlogin: userlogin,
 							password: password
 							}).save(function(err, acc){
-								if (err){
-									console.log(err);
-								} else {
-									if (acc){ // might be error with pushing it to the accounts folder
-										Folder.findOneAndUpdate({_id: folderId}, {$push: {accounts: acc}}, function(err) {
-											if (err){
-												console.log("had error updating folder with new account");
-											} 
-											res.redirect('/folders/' + folderId); // refresh the page
-										});
-									} else{
-										console.log("unknown error creating the folder");
-										res.redirect('/folders/' + folderId); // refresh the page
-									}
-								}
+								functions.saveAccount(acc, folderId, err, () => {
+									res.redirect('/folders/' + folderId + "/");
+								});
 							});
 					} else {
 						res.render("folder", {folder: folder, accData: accData, accExistsError: true})
 					}
-				} else{
+				} 
+				else
+				{
 					res.redirect('/dashboard');
 				}
 			});
 		}
-		else if (err){
-			console.log(err);
+		else {
+			if (err) console.log(err);
 			res.redirect('/');
 		}
 	});
@@ -271,29 +210,17 @@ app.get('/folders/:id/:name/edit', (req, res) => {
 
 			Folder.findOne({_id: folderId}, function(err, folder){
 				if (folder){
-					let accData = [];
+					const accData = functions.getAccounts(folder, encKey); // get list of accounts
+					const targetAcc = functions.findAccount(accData, accName); // search for the one with "accName"
 
-					const accs = folder.accounts;
-					let found = false;
-
-					accs.filter(function(acc){
-						
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-
-						if (acc.name === accName){
-							found = true;
-							res.render("folder", {folder: folder, editAcc: acc, accData: accData});
-						}
-					});
-
-					if (!found){
-						res.redirect('/folders/' + folderId);
+					if (targetAcc){
+						res.render("folder", {folder: folder, editAcc: targetAcc, accData: accData});
+					} else {
+						res.redirect('/folders/' + folderId + "/");
 					}
 				} else if (err){
 					console.log(err);
-					res.redirect('/folders/' + folderId);
+					res.redirect('/folders/' + folderId + "/");
 				}
 			});
 		} else if (err){
@@ -313,42 +240,25 @@ app.post('/folders/:id/:name/edit-account', (req, res) => {
 		if (user){
 			const encKey = encryption.unobscureKey(user.secureArr);
 
-			_userlogin = encryption.encryptText(encKey, _userlogin);
+			_userlogin = encryption.encryptText(encKey, _userlogin); // encrypt the new account info that user input
 			_password = encryption.encryptText(encKey, _password);
 
 			Folder.findOne({_id: folderId}, function(err, folder){
 				if (folder){
 
-					Account.findOneAndUpdate({name: accName}, {$set: {userlogin: _userlogin, password: _password}}, function(err, acc){
-						if (acc){
-							const accs = folder.accounts;
-							// update the accounts array within the folder
-							accs.filter(function(el){
-								if (el.name === accName){
-									el.userlogin = _userlogin;
-									el.password = _password;
-								}
-							});
-
-							// save that new accounts array to the folder in db
-							Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
-								if (folder){
-									res.redirect('/folders/' + folderId);
-								} else if (err) {
-									console.log(err);
-								}
-							});
-						}
-						else if (err){
-							console.log(err);
-							res.redirect('/folders/' + folderId);
-						} else {
-							res.redirect('/folders/' + folderId);
-						}
+					// update the account and redirect to folder account view 
+					functions.updateAccount(accName, _userlogin, _password, folder, folderId, () => {
+						res.redirect('/folders/' + folderId + "/");
 					});
 
-				} // end if(folder)
+				} else {
+					if (err) console.log(err);
+					res.redirect('/folders/' + folderId + "/");
+				} 
 			});
+		} else {
+			if (err) console.log(err);
+			res.redirect('/');
 		}
 	});
 });
@@ -364,81 +274,46 @@ app.get('/folders/:id/:name/remove', (req, res) => {
 			Folder.findOne({_id: folderId}, function(err, folder){
 				if (folder){
 
-					let accData = [];
-					// determine if the account actually exists within this folder
-					const accs = folder.accounts;
-					let found = false;
+					const accData = functions.getAccounts(folder, encKey); // get list of accounts
+					const targetAcc = functions.findAccount(accData, accName); // search for the one with "accName"
 
-					accs.filter(function(acc){
-						const userlogin = encryption.decryptText(encKey, acc.userlogin);
-						const password = encryption.decryptText(encKey, acc.password);
-						accData.push({name: acc.name, userlogin: userlogin, password: password});
-
-						if (acc.name === accName){
-							found = true;
-							res.render("folder", {folder: folder, removeAcc: acc, accData: accData});
-						}
-					});
-
-					if (!found){
-						res.redirect('/folders/' + folderId);
+					if (targetAcc){
+						res.render("folder", {folder: folder, removeAcc: targetAcc, accData: accData});
+					} else {
+						res.redirect('/folders/' + folderId + "/");
 					}
-				} else if (err){
-					console.log(err);
-					res.redirect('/folders/' + folderId);
-				} else {
-					res.redirect('/folders/' + folderId);
+
+				} 
+				else {
+					if (err) console.log(err);
+					res.redirect('/folders/' + folderId + "/");
 				}
 			});
+		} else {
+			res.redirect('/');
 		}
 	});
 });
 
+// now we want to process the deletion of an account
+// we have to delete the account from DB
+// and also remove the reference in the associated folder's accounts[] array
 app.post('/folders/:id/:name/remove-account', (req, res) => {
 	const folderId = req.params.id;
 	const accName = req.params.name;
 
 	Folder.findOne({_id: folderId}, function(err, folder){
 		if (folder){
-			Account.deleteOne({name: accName}, function(err, acc){
-				if (acc){
-					const accs = folder.accounts;
-
-					// delete the account from within the folder.accounts array
-					let idx = -1;
-					for (let i = 0; i < accs.length; i++){
-						const el = accs[i];
-						if (el.name === accName){
-							idx = i;
-						}
-					}
-
-					if (idx != -1){
-						accs.splice(idx, 1);
-					}
-
-					// update the folder array so that it doesn't have the deleted account
-					Folder.findOneAndUpdate({_id: folderId}, {$set: {accounts: accs}}, function(err, folder){
-						if (folder){
-							res.redirect('/folders/' + folderId);
-						} else if (err) {
-							console.log(err);
-						}
-					});
-				}
-				else if (err){
-					console.log(err);
-					res.redirect('/folders/' + folderId);
-				}
+			functions.deleteAccount(accName, folder, folderId, () => {
+				res.redirect('/folders/' + folderId + "/");
 			});
-		} else if (err){
-			console.log(err);
-			res.redirect('/folders/' + folderId);
-		}
+		} else { 
+			if (err) console.log(err);
+			res.redirect('/folders/' + folderId + "/");
+		} 
 	});
 });
 
 app.set('view engine', 'hbs');
 
-app.listen(8080);
-
+app.listen(process.env.PORT || 8080);

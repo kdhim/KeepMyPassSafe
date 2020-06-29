@@ -2,7 +2,7 @@
 	{{#if folder}}
 		{{#if showAddAcc}}
 		<div class="container text-center jumbotron">
-			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+			<a href="/folders/{{folder._id}}/" class="close" data-dismiss="modal" aria-label="Close">
 	          <span aria-hidden="true">&times;</span>
 	        </a>
 			<form class="mt-4" method="post" action="/folders/{{folder._id}}/add-account">
@@ -34,7 +34,7 @@
 
 		{{#if editAcc}}
 		<div class="container text-center jumbotron">
-			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+			<a href="/folders/{{folder._id}}/" class="close" data-dismiss="modal" aria-label="Close">
 	          <span aria-hidden="true">&times;</span>
 	        </a>
 			<form class="mt-4" method="post" action="/folders/{{folder._id}}/{{editAcc.name}}/edit-account">
@@ -60,14 +60,14 @@
 
 		{{#if removeAcc}}
 		<div class="container text-center jumbotron">
-			<a href="/folders/{{folder._id}}" class="close" data-dismiss="modal" aria-label="Close">
+			<a href="/folders/{{folder._id}}/" class="close" data-dismiss="modal" aria-label="Close">
 	          <span aria-hidden="true">&times;</span>
 	        </a>
 			<form class="mt-4" method="post" action="/folders/{{folder._id}}/{{removeAcc.name}}/remove-account">
 				<fieldset>
 					<legend>Are you sure you want to delete your {{removeAcc.name}} Account?</legend>
 					<button type="submit" class="btn btn-danger">Delete Account</button> <br /> <br />
-					<a class="text-muted" href="/folders/{{folder._id}}">No, cancel this operation</a>
+					<a class="text-muted" href="/folders/{{folder._id}}/">No, cancel this operation</a>
 				</fieldset>
 			</form>
 		</div>
@@ -83,10 +83,12 @@
 			<a href="../../../dashboard" class="btn btn-link">Click here to go back</a>
 		{{else if showAddAcc}}
 			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
-		{{ else if accExistsError}}
+		{{else if accExistsError}}
 			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
+		{{else if removeAcc}}
+			<a href="../../../dashboard" class="btn btn-link">Click here to go back</a>
 		{{else}}
-			<a href="../dashboard" class="btn btn-link">Click here to go back</a>
+			<a href="../../dashboard" class="btn btn-link">Click here to go back</a>
 		{{/if}}
 
 

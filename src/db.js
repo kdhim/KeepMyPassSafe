@@ -56,7 +56,8 @@ mongoose.model('Account', Account);
 
 // is the environment variable, NODE_ENV, set to PRODUCTION? 
 let dbconf;
-/*if (process.env.NODE_ENV === 'PRODUCTION') {
+
+if (process.env.NODE_ENV === 'PRODUCTION') {
  // if we're in PRODUCTION mode, then read the configration from a file
  // use blocking file io to do this...
  const fs = require('fs');
@@ -64,17 +65,25 @@ let dbconf;
  const fn = path.join(__dirname, 'config.json');
  const data = fs.readFileSync(fn);
 
+ if (!data){
+	console.log("Error reading config.json file");
+ }
+
  // our configuration file will be in json, so parse it and set the
  // conenction string appropriately!
  const conf = JSON.parse(data);
  console.log("configuration: " + conf["dbconf"]);
  dbconf = conf.dbconf;
 } else {
- // if we're not in PRODUCTION mode, then use
- dbconf = 'mongodb://localhost/final';
-}*/
+ // if we're not in PRODUCTION mode, then connect to localhost
+ console.log("We are in local development mode");
 
-dbconf = 'mongodb://userEBO:IOwXiSi82jNirN3o@172.30.44.171:27017/sampledb';
+ dbconf = 'mongodb://localhost/final';
+}
+
+mongoose.connect(dbconf);
+
+// this code below was used at one point for deploying application to OpenShift pod
 
 /*if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 
@@ -86,6 +95,4 @@ console.log("URL:" + process.env.OPENSHIFT_MONGODB_DB_URL);
     process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
     process.env.OPENSHIFT_MONGODB_DB_PORT + '/' + process.env.OPENSHIFT_APP_NAME;
   };*/
-
-mongoose.connect(dbconf);
 
