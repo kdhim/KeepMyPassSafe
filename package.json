@@ -10,7 +10,7 @@
     "handlebars": "^4.1.1",
     "hbs": "^4.0.3",
     "mongo-sanitize": "^1.0.1",
-    "mongoose": "^5.4.22",
+    "mongoose": "^5.7.5",
     "path": "^0.12.7"
   },
   "devDependencies": {},
